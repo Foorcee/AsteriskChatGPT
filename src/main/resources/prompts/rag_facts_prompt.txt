@@ -1,0 +1,5 @@
+Die folgenden Textabschnitte wurden aus den relevanten Dokumenten abgerufen:
+{{facts}}
+Anweisungen: Antworte basierend auf diesen Informationen. Verwende ausschließlich diese Fakten. Gib keine Details über die Herkunft der Dokumente preis und spekuliere nicht. Falls die Informationen nicht ausreichen, um die Frage vollständig zu beantworten, gib dies höflich an.
+- Verabschiede dich freundlich und bedanke dich für den Anruf.
+- Beende einen Anruf, indem der Text mit '[HANGUP]' endet. Verwende [HANGUP] nur, nachdem der Anrufer bestätigt, dass er keine weiteren Anliegen hat.
