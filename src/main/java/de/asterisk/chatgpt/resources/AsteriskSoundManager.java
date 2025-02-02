@@ -43,9 +43,6 @@ public class AsteriskSoundManager {
 
         @Override
         public void close() {
-            if (true)
-                return;
-
             for (File audioFile : createdAudioFiles) {
                 if (!audioFile.exists())
                     continue;

@@ -13,7 +13,7 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <openai.verion>0.18.2</openai.verion>
+        <openai.verion>0.20.0</openai.verion>
         <asterisk.verion>3.40.1</asterisk.verion>
     </properties>
 
@@ -29,7 +29,7 @@
         <dependency>
             <groupId>com.openai</groupId>
             <artifactId>openai-java</artifactId>
-            <version>0.20.0</version>
+            <version>${openai.verion}</version>
         </dependency>
         <dependency>
             <groupId>org.asteriskjava</groupId>
