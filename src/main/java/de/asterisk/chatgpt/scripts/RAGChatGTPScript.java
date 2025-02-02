@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
+//TODO: Aktuell bekommen wir nicht die Transkription des Audios daher können wir keine RAG Suche durchführen
 public class RAGChatGTPScript extends DefaultChatGPTScript {
 
     private final RAGSearchClient searchClient = new RAGSearchClient();
@@ -56,7 +57,7 @@ public class RAGChatGTPScript extends DefaultChatGPTScript {
     }
 
     @Override
-    protected void init() {
+    protected void addSystemMessage() {
         String systemPrompt = PromptResourceManager.getPrompt("rag_system_prompt");
         addSystemMessage(systemPrompt);
     }

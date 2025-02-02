@@ -27,9 +27,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.theokanning.openai-gpt3-java</groupId>
-            <artifactId>service</artifactId>
-            <version>${openai.verion}</version>
+            <groupId>com.openai</groupId>
+            <artifactId>openai-java</artifactId>
+            <version>0.20.0</version>
         </dependency>
         <dependency>
             <groupId>org.asteriskjava</groupId>

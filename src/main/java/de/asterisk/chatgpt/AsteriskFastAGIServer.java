@@ -1,7 +1,6 @@
 package de.asterisk.chatgpt;
 
 import de.asterisk.chatgpt.scripts.DefaultChatGPTScript;
-import de.asterisk.chatgpt.scripts.RAGChatGTPScript;
 import org.asteriskjava.fastagi.AgiChannel;
 import org.asteriskjava.fastagi.AgiRequest;
 import org.asteriskjava.fastagi.AgiScript;

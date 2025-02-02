@@ -2,24 +2,22 @@ package de.asterisk.chatgpt.scripts;
 
 import de.asterisk.chatgpt.resources.AsteriskSoundManager;
 import de.asterisk.chatgpt.resources.PromptResourceManager;
-import io.reactivex.Completable;
 import lombok.extern.slf4j.Slf4j;
 import org.asteriskjava.fastagi.AgiChannel;
 import org.asteriskjava.fastagi.AgiException;
 import org.asteriskjava.fastagi.AgiRequest;
 
 import java.io.File;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.io.IOException;
 
 @Slf4j
 public class DefaultChatGPTScript extends AbstractChatGTPScript {
 
-    private static final String HANGUP = "[HANGUP]";
-
     private final String welcomeMessage;
 
     public DefaultChatGPTScript() {
+        addSystemMessage();
+
         this.welcomeMessage = PromptResourceManager.getPrompt("welcome_message");
         addAssistantMessage(welcomeMessage);
     }
@@ -48,61 +46,32 @@ public class DefaultChatGPTScript extends AbstractChatGTPScript {
                 log.info("Recording saved to: {}", recording.getAbsolutePath());
 
                 //Transcribe the recording
-                String heardText = getSpeechToText(recording);
-                log.info("Heard: {}", heardText);
+                addUserAudioRecording(recording);
 
-                if (!hasUnderstood(heardText)) {
-                    String fallbackText = PromptResourceManager.getPromptVariant("fallback_message");
-                    addAssistantMessage(fallbackText);
-                    File file = getCachedTextToSpeech("fallback", fallbackText);
-                    playAudioFile(file);
-                    continue;
-                }
+                //Get response from assistant
+                var result = generateAudioResponseResponse(session);
 
-                onHeardText(heardText);
-                addUserMessage(heardText);
-
-                CompletableFuture<AsyncResponse> asyncResponse = CompletableFuture.supplyAsync(() -> {
-                    //Get response from assistant
-                    String assistantResponse = getChatResponse();
-
-                    log.info("Assistant response: {}", assistantResponse);
-
-                    boolean isHangup = assistantResponse.endsWith(HANGUP);
-                    assistantResponse = cleanText(assistantResponse);
-
-                    addAssistantMessage(assistantResponse);
-
-                    log.info("Converting text to speech...");
-                    File responseFile = session.getAudioFile("response.wav");
-                    getTextToSpeech(assistantResponse, responseFile);
-
-                    return new AsyncResponse(responseFile, isHangup);
+                result.getAudioFile().ifPresent(responseFile -> {
+                    log.info("Playing response...");
+                    try {
+                        playAudioFile(responseFile);
+                    } catch (AgiException e) {
+                        throw new RuntimeException(e);
+                    }
                 });
 
-                if (heardText.length() > 200) {
-                    String fillMessage = PromptResourceManager.getPromptVariant("fill_message");
-                    File fillFile = getCachedTextToSpeech("fill", fillMessage);
-                    playAudioFile(fillFile);
-                }
-
-                AsyncResponse response = asyncResponse.get();
-
-                log.info("Playing response...");
-                playAudioFile(response.responseFile());
-
-                if (response.hangup()) {
+                if (result.isHangup()) {
                     log.info("Call ended by assistant");
                     hangup();
                     return;
                 }
-            } catch (ExecutionException | InterruptedException e) {
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
-    protected void init() {
+    protected void addSystemMessage() {
         String systemPrompt = PromptResourceManager.getPrompt("default_system_prompt");
         addSystemMessage(systemPrompt);
     }
@@ -119,7 +88,7 @@ public class DefaultChatGPTScript extends AbstractChatGTPScript {
         }
 
         log.info("Generating {} message audio file {}", type, audioFile);
-        getTextToSpeech(text, audioFile);
+        //TODO: getTextToSpeech(text, audioFile);
         return audioFile;
     }
 
@@ -131,24 +100,4 @@ public class DefaultChatGPTScript extends AbstractChatGTPScript {
         String fileName = file.getAbsolutePath().replace(".wav", "");
         streamFile(fileName);
     }
-
-    private String cleanText(String text) {
-        return text.replace("\n", " ")
-                .replace('"', '\'').replace(HANGUP, "");
-    }
-
-    private static final String[] BLOCKED_KEYWORDS = new String[]{"amara.org", "untertitel"};
-
-    private boolean hasUnderstood(String text) {
-        String t = text.toLowerCase();
-        for (String blockedKeyword : BLOCKED_KEYWORDS) {
-            if (t.contains(blockedKeyword)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private record AsyncResponse(File responseFile, boolean hangup) {}
 }
